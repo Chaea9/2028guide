@@ -1,28 +1,29 @@
 import os
 import streamlit as st
 from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.vectorstores import Chroma
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_google_genai import (
+    ChatGoogleGenerativeAI,
+    GoogleGenerativeAIEmbeddings,
+)
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
 
 # 1. 페이지 설정
 st.set_page_config(
     page_title="2028 대입 개편 맞춤형 AI 플랫폼", page_icon="🎓", layout="centered"
 )
 
-# 2. OpenAI API 키 설정 (Streamlit Cloud Secrets에서 안전하게 가져오기)
-if "OPENAI_API_KEY" in st.secrets:
-  os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+# 2. Google Gemini API 키 설정 (Streamlit Secrets에서 안전하게 가져오기)
+if "GOOGLE_API_KEY" in st.secrets:
+  os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
 
 
 # 3. 상단 타이틀 및 탭 구성
 st.title("🎓 2028 대입 개편 맞춤형 AI 플랫폼")
-st.caption(
-    "스마트폰과 태블릿에서 설치 없이 바로 접속하여 이용하는 입시 도우미"
-)
+st.caption("스마트폰과 태블릿에서 바로 접속하여 이용하는 입시 도우미")
 
 tab_chat, tab_calc, tab_dict = st.tabs(
     ["💬 AI 입시 상담", "📊 5→9등급 환산", "📖 2028 대입 용어 단어장"]
@@ -38,7 +39,6 @@ with tab_chat:
   )
 
 
-  # 캐시를 이용해 서울대, 연세대, 고려대 PDF 로드 및 Vector DB 구축
   @st.cache_resource
   def load_vectorstore():
     pdf_files = ["서울대.pdf", "연세대.pdf", "고려대.pdf"]
@@ -55,8 +55,10 @@ with tab_chat:
         chunk_size=1000, chunk_overlap=200
     )
     splits = text_splitter.split_documents(docs)
+    # Gemini 임포트 적용
     vectorstore = Chroma.from_documents(
-        documents=splits, embedding=OpenAIEmbeddings()
+        documents=splits,
+        embedding=GoogleGenerativeAIEmbeddings(model="models/embedding-001"),
     )
     return vectorstore.as_retriever(search_kwargs={"k": 3})
 
@@ -86,13 +88,12 @@ with tab_chat:
         st.markdown(response_text)
       else:
         with st.spinner("서·연·고 입시 문서를 분석하는 중..."):
-          llm = ChatOpenAI(model="gpt-4o", temperature=0)
+          # Gemini 모델 적용 (gemini-1.5-flash)
+          llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0)
 
-          # 문서 포맷팅 함수
           def format_docs(docs):
             return "\n\n".join(doc.page_content for doc in docs)
 
-          # 시스템 프롬프트 설정 (환각 방지 및 출처 표기 규칙)
           system_prompt = (
               "당신은 2028학년도 대입 제도 개편안과 서·연·고 입시 전형을 완벽하게"
               " 이해하고 있는 입시 전문 AI입니다.\n"
@@ -110,7 +111,6 @@ with tab_chat:
               ("human", "{input}"),
           ])
 
-          # LCEL 표준 체인 구성 (모듈 에러 없음)
           rag_chain = (
               {
                   "context": retriever | format_docs,
@@ -121,11 +121,9 @@ with tab_chat:
               | StrOutputParser()
           )
 
-          # 검색된 문서 객체를 가져오기 위한 별도 retriever 호출
           retrieved_docs = retriever.invoke(user_query)
           response_text = rag_chain.invoke(user_query)
 
-          # 출처 정보 추가 가공
           if retrieved_docs:
             sources = set()
             for doc in retrieved_docs:
