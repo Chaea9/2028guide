@@ -55,10 +55,11 @@ with tab_chat:
         chunk_size=1000, chunk_overlap=200
     )
     splits = text_splitter.split_documents(docs)
-    # Gemini 임포트 적용
+
+    # 💡 모델명을 text-embedding-004로 변경합니다.
     vectorstore = Chroma.from_documents(
         documents=splits,
-        embedding=GoogleGenerativeAIEmbeddings(model="models/embedding-001"),
+        embedding=GoogleGenerativeAIEmbeddings(model="text-embedding-004"),
     )
     return vectorstore.as_retriever(search_kwargs={"k": 3})
 
