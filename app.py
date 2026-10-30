@@ -1,6 +1,6 @@
 import os
 import streamlit as st
-from langchain.chains import create_retrieval_chain
+from langchain.chains.retrieval import create_retrieval_chain  # 경로 수정 완료
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.prompts import ChatPromptTemplate
@@ -13,10 +13,11 @@ st.set_page_config(
     page_title="2028 대입 개편 맞춤형 AI 플랫폼", page_icon="🎓", layout="centered"
 )
 
-# 2. OpenAI API 키 설정 (Streamlit Cloud Secrets에서 안전하게 불러오기)
+# 2. OpenAI API 키 설정 (Streamlit Cloud Secrets에서 안전하게 가져오기)
 if "OPENAI_API_KEY" in st.secrets:
   os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
+  )
 
 # 3. 상단 타이틀 및 탭 구성
 st.title("🎓 2028 대입 개편 맞춤형 AI 플랫폼")
@@ -41,7 +42,7 @@ with tab_chat:
   # 캐시를 이용해 서울대, 연세대, 고려대 PDF 로드 및 Vector DB 구축
   @st.cache_resource
   def load_vectorstore():
-    # 요청하신 한글 파일명 3개로 수정 완료
+    # 업로드하신 한글 파일명 3개 반영
     pdf_files = ["서울대.pdf", "연세대.pdf", "고려대.pdf"]
     docs = []
     for file in pdf_files:
@@ -235,5 +236,5 @@ with tab_dict:
 
   for title, desc in terms:
     if not search_term or search_term.lower() in title.lower():
-      with st.expander(f"📌 {title}[cite: 1]"):
+      with st.expander(f"📌 {title}"):
         st.write(desc)
