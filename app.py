@@ -8,18 +8,15 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_vectorstores import Chroma
 
-
 # 1. 페이지 설정
 st.set_page_config(
     page_title="2028 대입 개편 맞춤형 AI 플랫폼", page_icon="🎓", layout="centered"
 )
 
-# 2. OpenAI API 키 설정 (Streamlit Cloud의 Secrets에서 안전하게 가져오기)
+# 2. OpenAI API 키 설정 (Streamlit Cloud Secrets에서 안전하게 불러오기)
 if "OPENAI_API_KEY" in st.secrets:
   os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
-else:
-  # 로컬(내 컴퓨터)에서 테스트할 때만 여기에 키를 넣고, 깃허브에 올릴 때는 지우거나 빈 칸으로 두세요
-  os.environ["OPENAI_API_KEY"] = "여기에_테스트용_키를_넣으세요"
+
 # 3. 상단 타이틀 및 탭 구성
 st.title("🎓 2028 대입 개편 맞춤형 AI 플랫폼")
 st.caption(
@@ -36,18 +33,18 @@ with tab_chat:
   st.info(
       "💡 서울대, 연세대, 고려대 2028학년도 입학전형 시행계획 PDF를 바탕으로"
       ' 답변합니다. 문서에 없는 내용은 "제공된 입시 문서에 없는'
-      " 정보입니다."라고 답변합니다."
+      ' 정보입니다."라고 답변합니다.'
   )
 
 
   # 캐시를 이용해 서울대, 연세대, 고려대 PDF 로드 및 Vector DB 구축
   @st.cache_resource
   def load_vectorstore():
-    # 5번 항목: 서울대, 연세대, 고려대 PDF 파일명
+    # 서울대, 연세대, 고려대 PDF 파일명 (실제 업로드할 파일명과 정확히 일치시켜주세요)
     pdf_files = [
-        "서울대.pdf",
-        "연세대.pdf",
-        "고려대.pdf",
+        "서울대.pdf", 
+        "연세대.pdf",  
+        "고려대.pdf",  
     ]
     docs = []
     for file in pdf_files:
@@ -155,7 +152,7 @@ with tab_calc:
     )
 
 
-# --- [탭 3: 2028 대입 핵심 용어 단어장 (요청사항 반영 10개 이상)] ---
+# --- [탭 3: 2028 대입 핵심 용어 단어장 (10개 이상)] ---
 with tab_dict:
   st.subheader("📖 2028 대입 핵심 용어 단어장")
   st.write(
@@ -166,7 +163,6 @@ with tab_dict:
       "🔍 단어 검색", placeholder="검색할 용어를 입력하세요..."
   )
 
-  # 요청하신 수시, 정시, 논술, 학종, 최저 등을 포함한 핵심 용어 10개 이상
   terms = [
       (
           "수시모집",
