@@ -6,7 +6,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 
 # 1. 페이지 설정
 st.set_page_config(
