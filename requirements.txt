@@ -1,7 +1,4 @@
 streamlit
-langchain
-langchain-community
-langchain-core
-langchain-google-genai
+google-genai
 chromadb
 pypdf
