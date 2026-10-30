@@ -17,6 +17,7 @@ st.set_page_config(
 if "OPENAI_API_KEY" in st.secrets:
   os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
+
 # 3. 상단 타이틀 및 탭 구성
 st.title("🎓 2028 대입 개편 맞춤형 AI 플랫폼")
 st.caption(
@@ -40,12 +41,8 @@ with tab_chat:
   # 캐시를 이용해 서울대, 연세대, 고려대 PDF 로드 및 Vector DB 구축
   @st.cache_resource
   def load_vectorstore():
-    # 서울대, 연세대, 고려대 PDF 파일명 (실제 업로드할 파일명과 정확히 일치시켜주세요)
-    pdf_files = [
-        "서울대.pdf", 
-        "연세대.pdf",  
-        "고려대.pdf",  
-    ]
+    # 요청하신 한글 파일명 3개로 수정 완료
+    pdf_files = ["서울대.pdf", "연세대.pdf", "고려대.pdf"]
     docs = []
     for file in pdf_files:
       if os.path.exists(file):
@@ -84,8 +81,8 @@ with tab_chat:
     with st.chat_message("assistant"):
       if retriever is None:
         response_text = (
-            "⚠️ 서울대, 연세대, 고려대 PDF 파일이 폴더에 없습니다. 파일을"
-            " 업로드해 주세요!"
+            "⚠️ '서울대.pdf', '연세대.pdf', '고려대.pdf' 파일이 폴더에 없습니다."
+            " 파일을 업로드해 주세요!"
         )
         st.markdown(response_text)
       else:
@@ -152,7 +149,7 @@ with tab_calc:
     )
 
 
-# --- [탭 3: 2028 대입 핵심 용어 단어장 (10개 이상)] ---
+# --- [탭 3: 2028 대입 핵심 용어 단어장] ---
 with tab_dict:
   st.subheader("📖 2028 대입 핵심 용어 단어장")
   st.write(
@@ -238,5 +235,5 @@ with tab_dict:
 
   for title, desc in terms:
     if not search_term or search_term.lower() in title.lower():
-      with st.expander(f"📌 {title}"):
+      with st.expander(f"📌 {title}[cite: 1]"):
         st.write(desc)
